@@ -25,8 +25,11 @@ from tensorflow.keras.losses import mse, binary_crossentropy
 
 dataset_train = '/home/leo/deeplearning/depth_prediction/train'
 ground_truth = '/home/leo/deeplearning/depth_prediction/ground_truth'
-weight = 320
-height = 240
+width = 320
+height = 180
+
+width = int(width/2)
+height = int(height/2)
 
 def create_training_data():
 	train_data = []
@@ -34,7 +37,7 @@ def create_training_data():
 
 	for img in sorted(os.listdir(dataset_train)):
 		img_array = cv2.imread(os.path.join(dataset_train,img))
-		img_array = cv2.resize(img_array, (320, 240))
+		img_array = cv2.resize(img_array, (width, height))
 		train_data.append(img_array)
 
 		# plt.imshow(img_array, cmap='gray')  # graph it
@@ -44,13 +47,13 @@ def create_training_data():
 
 	for img in sorted(os.listdir(ground_truth)):
 		img_array = cv2.imread(os.path.join(ground_truth,img) ,cv2.IMREAD_GRAYSCALE)
-		img_array = cv2.resize(img_array, (320, 240))
+		img_array = cv2.resize(img_array, (width, height))
 		depth_data.append(img_array)
 		# plt.imshow(img_array, cmap='gray')  # graph it
 		# plt.show()  # display!
 		# break
-	train_data = np.array(train_data).reshape(-1, height, weight, 3)
-	depth_data = np.array(depth_data).reshape(-1, height, weight, 1)
+	train_data = np.array(train_data).reshape(-1, height, width, 3)
+	depth_data = np.array(depth_data).reshape(-1, height, width, 1)
 	train_data = np.float32(train_data / 255.)
 	depth_data = np.float32(depth_data / 255.)
 
