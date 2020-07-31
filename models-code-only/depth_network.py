@@ -281,8 +281,9 @@ def ResNet_autoencoder(height, width, depth, latentDim=16):
 
     # # decoder Stage 1
     X = Concatenate()([X, skip_connect_4])
+    
+    X, _ = identity_block_transpose(X, 3, [512, 256, 512], stage=5, block='b')
     X = Conv2DTranspose(256, (1, 1), strides=(1, 1), padding='same', kernel_initializer=glorot_uniform(seed=0))(X)
-    X, _ = identity_block_transpose(X, 3, [256, 128, 256], stage=5, block='b')
     X,_ = convolutional_block_transpose( X, f=3, filters=[256, 128, 128], stage=5, block='a', s=2)
 
 
@@ -290,26 +291,27 @@ def ResNet_autoencoder(height, width, depth, latentDim=16):
 
 
     # decoder Stage 2
+
     X = Concatenate()([X, skip_connect_3])
-    X = Conv2DTranspose(128, (1, 1), strides=(1, 1), padding='same', kernel_initializer=glorot_uniform(seed=0))(X)
-    X, _ = identity_block_transpose(X, 3, [128, 64, 128], stage=6, block='b')
+    
+    X, _ = identity_block_transpose(X, 3, [256, 128, 256], stage=6, block='b')
+    X = Conv2DTranspose(256, (1, 1), strides=(1, 1), padding='same', kernel_initializer=glorot_uniform(seed=0))(X)
     X,_ = convolutional_block_transpose( X, f=3, filters=[128, 64, 64], stage=6, block='a', s=2)
     X = Cropping2D(cropping=((1, 0), (0, 0)), data_format=None)(X)
 
     # # # decoder Stage 3
     X = Concatenate()([X, skip_connect_2])
-    X = Conv2DTranspose(64, (1, 1), strides=(1, 1), name='conv7-1', padding='same',kernel_initializer=glorot_uniform(seed=0))(X)
+    X = Conv2DTranspose(128, (1, 1), strides=(1, 1), name='conv7-1', padding='same',kernel_initializer=glorot_uniform(seed=0))(X)
     X = BatchNormalization(axis=3, name='bn_conv7-1')(X)
     X = Activation('relu')(X)
-    X = Conv2DTranspose(32, (3, 3), strides=(2, 2), name='conv7-2', padding='same',kernel_initializer=glorot_uniform(seed=0))(X)
+    X = Conv2DTranspose(64, (3, 3), strides=(2, 2), name='conv7-2', padding='same',kernel_initializer=glorot_uniform(seed=0))(X)
     X = BatchNormalization(axis=3, name='bn_conv7-2')(X)
     X = Activation('relu')(X)
     X = Cropping2D(cropping=((1, 0), (0, 0)), data_format=None)(X)
 
-    # # # # decoder Stage 4
+    # # decoder Stage 4
     X = Concatenate()([X, skip_connect_1])
-
-    X = Conv2DTranspose(32, (1, 1), strides=(1, 1), name='conv8-1', kernel_initializer=glorot_uniform(seed=0))(X)
+    X = Conv2DTranspose(64, (1, 1), strides=(1, 1), name='conv8-1', kernel_initializer=glorot_uniform(seed=0))(X)
     X = BatchNormalization(axis=3, name='bn_conv8-1')(X)
     X = Activation('relu')(X)
     X = Conv2DTranspose(32, (1, 1), strides=(1, 1), name='conv8-2', kernel_initializer=glorot_uniform(seed=0))(X)
@@ -327,9 +329,10 @@ def ResNet_autoencoder(height, width, depth, latentDim=16):
 def autoencoder_loss(depth_img, output):
     # Compute error in reconstruction
     reconstruction_loss = mse(K.flatten(depth_img) , K.flatten(output))
-    
-    total_variation_weight = 30
-    total_loss = reconstruction_loss + total_variation_weight*tf.image.total_variation(output)
+    # total_loss = reconstruction_loss
+    # total_variation_weight = 20
+    total_loss = 500*reconstruction_loss + 0.5*tf.image.total_variation(output)
+    # total_loss =tf.image.total_variation(output)
     return total_loss
 
 
@@ -382,7 +385,7 @@ height = 180
 
 width = int(width/2)
 height = int(height/2)
-batch_size = 16
+batch_size = 32
 EPOCHS = 25
 
 train_gen = train_generator(train_data,depth_data,batch_size)
@@ -395,36 +398,16 @@ validation_gen = validation_generator(RGB_validation,depth_validation,batch_size
 opt = Adam(lr=1e-3)
 autoencoder = ResNet_autoencoder(height, width, 3, 16)
 autoencoder.compile(optimizer=opt, loss=autoencoder_loss)
-print(autoencoder.summary())
+# print(autoencoder.summary())
 
 
-autoencoder.fit_generator(train_gen, steps_per_epoch = 1000, validation_data = validation_gen, epochs=7, validation_steps= 20)
+i=15
+autoencoder.fit_generator(train_gen, steps_per_epoch = 100, validation_data = validation_gen, epochs=2, validation_steps= 20)
+autoencoder.save('model_'+str(i)+'_ResNet_autoencoder.h5')
 
-# model.fit(RGB_validation, depth_validation, epochs = EPOCHS, batch_size = batch_size)
-
-model.save('ResNet_autoencoder.h5')
-plot_model(model, to_file='model.png')
-# SVG(model_to_dot(model).create(prog='dot', format='svg'))
-
-
-# generate_and_save_images(model, EPOCHS, test_sample)
-
-# fig = plt.figure(figsize=(4, 4))
-
-# for i in range(test_sample.shape[0]):
-#     plt.subplot(4, 4, i + 1)
-#     plt.imshow(test_sample[i, :, :, :], cmap='gray')
-#     plt.axis('off')
-# plt.show()  # display!
+# for i in range(5):
+#     autoencoder.fit_generator(train_gen, steps_per_epoch = 500, validation_data = validation_gen, epochs=(i+1)*10, validation_steps= 20)
+#     autoencoder.save('model_'+str(i)+'_ResNet_autoencoder.h5')
 
 
-# fig = plt.figure(figsize=(4, 4))
-# for j in range(depth_sample.shape[0]):
-#     plt.subplot(4, 4, j + 1)
-#     plt.imshow(depth_sample[j, :, :, 0], cmap='gray')
-#     plt.axis('off')
-
-# # plt.savefig('try.png')
-# # tight_layout minimizes the overlap between 2 sub-plots
-# plt.show()  # display!
 

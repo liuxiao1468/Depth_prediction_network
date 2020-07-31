@@ -312,25 +312,28 @@ def ResNet_autoencoder(height, width, depth, latentDim=64):
 
     # # # decoder Stage 4
     X = Concatenate()([X, skip_connect_2])
-    X = Conv2DTranspose(128, (1, 1), strides=(1, 1), name='conv7-1', padding='same',kernel_initializer=glorot_uniform(seed=0))(X)
+    X = Conv2DTranspose(128, (1, 1), strides=(1, 1), name='conv9-1', padding='same',kernel_initializer=glorot_uniform(seed=0))(X)
     X = BatchNormalization(axis=3, name='bn_conv9-1')(X)
     X = Activation('relu')(X)
-    X = Conv2DTranspose(64, (3, 3), strides=(2, 2), name='conv7-2', padding='same',kernel_initializer=glorot_uniform(seed=0))(X)
+    X = Conv2DTranspose(64, (3, 3), strides=(2, 2), name='conv9-2', padding='same',kernel_initializer=glorot_uniform(seed=0))(X)
     X = BatchNormalization(axis=3, name='bn_conv9-2')(X)
     X = Activation('relu')(X)
 
     # # decoder Stage 5
     X = Concatenate()([X, skip_connect_1])
-    X = Conv2DTranspose(64, (1, 1), strides=(1, 1), name='conv8-1', kernel_initializer=glorot_uniform(seed=0))(X)
+    X = Conv2DTranspose(64, (1, 1), strides=(1, 1), name='conv10-1', kernel_initializer=glorot_uniform(seed=0))(X)
     X = BatchNormalization(axis=3, name='bn_conv10-1')(X)
     X = Activation('relu')(X)
-    X = Conv2DTranspose(32, (1, 1), strides=(1, 1), name='conv8-2', kernel_initializer=glorot_uniform(seed=0))(X)
+    X = Conv2DTranspose(32, (1, 1), strides=(1, 1), name='conv10-2', kernel_initializer=glorot_uniform(seed=0))(X)
     X = BatchNormalization(axis=3, name='bn_conv10-2')(X)
+    X = Activation('relu')(X)
+    X = Conv2DTranspose(16, (1, 1), strides=(1, 1), name='conv10-3', kernel_initializer=glorot_uniform(seed=0))(X)
+    X = BatchNormalization(axis=3, name='bn_conv10-3')(X)
     X = Activation('relu')(X)
 
 
     X = Conv2DTranspose(1, (3, 3), strides=(2, 2),padding="same")(X)
-    outputs = Activation("sigmoid")(X)
+    outputs = Activation('sigmoid')(X)
 
     autoencoder = Model(inputs=X_input, outputs=outputs, name='ResNet_autoencoder')
     # print(autoencoder.summary())
@@ -341,20 +344,19 @@ def ResNet_autoencoder(height, width, depth, latentDim=64):
 def autoencoder_loss(depth_img, output):
     # Compute error in reconstruction
     reconstruction_loss = mse(K.flatten(depth_img) , K.flatten(output))
-    dx, dy = tf.image.image_gradients(output)
 
-    total_loss = reconstruction_loss + 100*dx + 100*dy + 0.001*tf.image.total_variation(output)
+    dy_true, dx_true = tf.image.image_gradients(depth_img)
+    dy_pred, dx_pred = tf.image.image_gradients(output)
+    term3 = K.mean(K.abs(dy_pred - dy_true) + K.abs(dx_pred - dx_true), axis=-1)
 
+    tv = (1e-9)*tf.reduce_sum(tf.image.total_variation(output))
 
+    total_loss = 100*reconstruction_loss + term3 
+    # total_loss = tv
     return total_loss
 
 
 
-width = 320
-height = 180
-
-batch_size = 32
-EPOCHS = 25
 
 
 # model = ResNet50(input_shape=(64, 64, 3), classes=2)
@@ -405,9 +407,9 @@ autoencoder.compile(optimizer=opt, loss=autoencoder_loss)
 
 
 i=1
-autoencoder.fit_generator(train_gen, steps_per_epoch = 64, validation_data = validation_gen, epochs=4, validation_steps= 10)
+autoencoder.fit_generator(train_gen, steps_per_epoch = 50, validation_data = validation_gen, epochs=30, validation_steps= 20)
 autoencoder.save('model_'+str(i)+'_ResNet_autoencoder.h5')
 
-# for i in range (3):
-#     autoencoder.fit_generator(train_gen, steps_per_epoch = 100, validation_data = validation_gen, epochs=(i+1)*5, validation_steps= 20)
-#     autoencoder.save('model_'+str(i)+'_ResNet_autoencoder.h5')
+# for i in range (5):
+#     autoencoder.fit_generator(train_gen, steps_per_epoch = 50, validation_data = validation_gen, epochs=(i+1)*2, validation_steps= 20)
+#     autoencoder.save('model_'+str(i)+'_autoencoder.h5')

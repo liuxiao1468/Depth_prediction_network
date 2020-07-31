@@ -28,8 +28,8 @@ ground_truth = '/home/leo/deeplearning/depth_prediction/ground_truth'
 width = 320
 height = 180
 
-width = int(width/2)
-height = int(height/2)
+# width = int(width/2)
+# height = int(height/2)
 
 def create_training_data():
 	train_data = []
@@ -48,14 +48,18 @@ def create_training_data():
 	for img in sorted(os.listdir(ground_truth)):
 		img_array = cv2.imread(os.path.join(ground_truth,img) ,cv2.IMREAD_GRAYSCALE)
 		img_array = cv2.resize(img_array, (width, height))
+		img_array = (img_array/255)*6
+		img_array = np.where(img_array>1.0, 1.0, img_array)
+
 		depth_data.append(img_array)
 		# plt.imshow(img_array, cmap='gray')  # graph it
 		# plt.show()  # display!
 		# break
 	train_data = np.array(train_data).reshape(-1, height, width, 3)
 	depth_data = np.array(depth_data).reshape(-1, height, width, 1)
+
 	train_data = np.float32(train_data / 255.)
-	depth_data = np.float32(depth_data / 255.)
+	depth_data = np.float32(depth_data)
 
 	# train_data, RGB_validation, depth_data, depth_validation = train_test_split(train_data, depth_data, test_size=0.15)
 
