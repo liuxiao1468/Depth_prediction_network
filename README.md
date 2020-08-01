@@ -14,6 +14,10 @@ Output: 180x320 depth images
 
 Sample Results:
 
+Inputs:
+![RGB_images] https://github.com/liuxiao1468/Depth_prediction_network/blob/master/RGB_images.png
+
+
 Outputs:
 ![Depth_prediction](https://user-images.githubusercontent.com/25230143/89096237-04575000-d38a-11ea-8c12-5fac633765e8.png)
 
