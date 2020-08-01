@@ -16,11 +16,10 @@ Sample Results:
 
 Inputs:
 
-![alt text](RGB_images.png)
+![RGB_image](RGB_images.png "Input") ![Depth_prediction](Depth_prediction.png "Output")
 
 
-Outputs:
-![Depth_prediction](https://user-images.githubusercontent.com/25230143/89096237-04575000-d38a-11ea-8c12-5fac633765e8.png)
+
 
 
 Ground truth:
