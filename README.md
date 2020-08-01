@@ -12,8 +12,8 @@ Loss function: MSE + gradient + Total variance (TV)
 Input: 180x320 RGB images
 Output: 180x320 depth images
 
-Sample Results:
+Sample Results (Input; Output; Ground Truth):
 
-Inputs:
-
-![RGB_image](RGB_images.png "Input") ![Depth_prediction](Depth_prediction.png "Output") ![Ground_truth](Ground_truth.png "Ground Truth")
+![RGB_image](RGB_images.png "Input") 
+![Depth_prediction](Depth_prediction.png "Output") 
+![Ground_truth](Ground_truth.png "Ground Truth")
