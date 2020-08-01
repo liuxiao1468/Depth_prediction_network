@@ -16,7 +16,7 @@ Sample Results:
 
 Inputs:
 
-![alt text](https://github.com/liuxiao1468/Depth_prediction_network/blob/master/RGB_images.png)
+![alt text](RGB_images.png)
 
 
 Outputs:
