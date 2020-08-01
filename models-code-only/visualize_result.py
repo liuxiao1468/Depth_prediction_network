@@ -39,46 +39,87 @@ def select_batch(train_data, depth_data, b_size):
 def autoencoder_loss(depth_img, output):
     # Compute error in reconstruction
     reconstruction_loss = mse(K.flatten(depth_img) , K.flatten(output))
-    # total_loss = reconstruction_loss
-    # total_variation_weight = 20
-    total_loss = 100*reconstruction_loss + tf.image.total_variation(output)
-    # total_loss =tf.image.total_variation(output)
+
+    dy_true, dx_true = tf.image.image_gradients(depth_img)
+    dy_pred, dx_pred = tf.image.image_gradients(output)
+    term3 = K.mean(K.abs(dy_pred - dy_true) + K.abs(dx_pred - dx_true), axis=-1)
+
+    tv = (1e-8)*tf.reduce_sum(tf.image.total_variation(output))
+
+    total_loss = 100*reconstruction_loss + term3 + tv
+    # total_loss = tv
     return total_loss
+
 
 def generate_and_save_images(model, epoch, test_sample):
     predictions = model.predict(test_sample)
     fig = plt.figure(figsize=(4, 4))
+    # fig = plt.figure()
 
     for i in range(predictions.shape[0]):
         plt.subplot(4, 4, i + 1)
         plt.imshow(predictions[i, :, :, 0], cmap='gray')
         plt.axis('off')
-
-    # tight_layout minimizes the overlap between 2 sub-plots
-    plt.savefig('image_at_epoch_{:04d}.png'.format(epoch))
-    # plt.show()
-
-
-
-pickle_in = open("train_data.pickle", "rb")
-train_data = pickle.load(pickle_in)
-pickle_in = open("depth_data.pickle", "rb")
-depth_data = pickle.load(pickle_in)
+        # plt.savefig(str(i)+'.png')
+        # plt.show()
+    # plt.savefig('image_at_epoch_{:04d}.png'.format(epoch))
+    plt.show()
 
 
-num_examples_to_generate = 16
-test_sample, depth_sample = select_batch(train_data, depth_data, num_examples_to_generate)
+def save_RGB_images(test_sample, depth_sample):
+    # fig = plt.figure(figsize=(4, 4))
+    fig = plt.figure()
+
+    for i in range(test_sample.shape[0]):
+        plt.imshow(test_sample[i, :, :, :])
+        plt.axis('off')
+        plt.savefig(str(i)+'-RGB.png')
+
+
+
+def save_depth_images(test_sample, depth_sample):
+    fig = plt.figure()
+
+    for j in range(depth_sample.shape[0]):
+        plt.imshow(depth_sample[j, :, :, :], cmap='gray')
+        plt.axis('off')
+        plt.savefig(str(i)+'-D.png')
+
+## Get a test sample
+# pickle_in = open("train_data.pickle", "rb")
+# train_data = pickle.load(pickle_in)
+# pickle_in = open("depth_data.pickle", "rb")
+# depth_data = pickle.load(pickle_in)
+
+# num_examples_to_generate = 16
+# test_sample, depth_sample = select_batch(train_data, depth_data, num_examples_to_generate)
+
+# pickle_out = open("test_sample.pickle","wb")
+# pickle.dump(test_sample, pickle_out)
+# pickle_out.close()
+
+# pickle_out = open("depth_sample.pickle","wb")
+# pickle.dump(depth_sample, pickle_out)
+# pickle_out.close()
+
+
+pickle_in = open("test_sample.pickle", "rb")
+test_sample = pickle.load(pickle_in)
+pickle_in = open("depth_sample.pickle", "rb")
+depth_sample = pickle.load(pickle_in)
+
 
 EPOCHS = 10
 
-
 # Recreate the exact same model, including its weights and the optimizer
-model = tf.keras.models.load_model('model_1_ResNet_autoencoder.h5', custom_objects={'autoencoder_loss': autoencoder_loss})
-
+model = tf.keras.models.load_model('model_1_ResNet_autoencoder.h5', custom_objects={
+                                   'autoencoder_loss': autoencoder_loss})
+# model = tf.keras.models.load_model('U-net_depth.h5', custom_objects={'autoencoder_loss': autoencoder_loss})
 # Show the model architecture
-# model.summary()
+model.summary()
 
 generate_and_save_images(model, EPOCHS, test_sample)
+# save_depth_images(test_sample, depth_sample)
 
 fig = plt.figure(figsize=(4, 4))
 
@@ -86,15 +127,16 @@ for i in range(test_sample.shape[0]):
     plt.subplot(4, 4, i + 1)
     plt.imshow(test_sample[i, :, :, :], cmap='gray')
     plt.axis('off')
+    # plt.show()
 plt.show()  # display!
 
 
 fig = plt.figure(figsize=(4, 4))
+# fig = plt.figure()
 for j in range(depth_sample.shape[0]):
     plt.subplot(4, 4, j + 1)
     plt.imshow(depth_sample[j, :, :, 0], cmap='gray')
     plt.axis('off')
-
-# plt.savefig('try.png')
-# tight_layout minimizes the overlap between 2 sub-plots
+    # plt.savefig(str(j)+'-D.png')
+    # plt.show()
 plt.show()  # display!

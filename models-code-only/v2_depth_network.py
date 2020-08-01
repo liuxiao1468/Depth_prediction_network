@@ -349,9 +349,9 @@ def autoencoder_loss(depth_img, output):
     dy_pred, dx_pred = tf.image.image_gradients(output)
     term3 = K.mean(K.abs(dy_pred - dy_true) + K.abs(dx_pred - dx_true), axis=-1)
 
-    tv = (1e-9)*tf.reduce_sum(tf.image.total_variation(output))
+    tv = (1e-8)*tf.reduce_sum(tf.image.total_variation(output))
 
-    total_loss = 100*reconstruction_loss + term3 
+    total_loss = 100*reconstruction_loss + term3 + tv
     # total_loss = tv
     return total_loss
 
@@ -407,7 +407,7 @@ autoencoder.compile(optimizer=opt, loss=autoencoder_loss)
 
 
 i=1
-autoencoder.fit_generator(train_gen, steps_per_epoch = 50, validation_data = validation_gen, epochs=30, validation_steps= 20)
+autoencoder.fit_generator(train_gen, steps_per_epoch = 50, validation_data = validation_gen, epochs=75, validation_steps= 20)
 autoencoder.save('model_'+str(i)+'_ResNet_autoencoder.h5')
 
 # for i in range (5):
