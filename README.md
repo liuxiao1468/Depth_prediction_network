@@ -22,6 +22,6 @@ Outputs:
 
 
 Ground truth:
-![alt text](https://github.com/liuxiao1468/Depth_prediction_network/blob/master/Ground_truth.png)
+![Ground_truth](https://user-images.githubusercontent.com/25230143/89096253-251fa580-d38a-11ea-94ef-f2bad884045f.png)
 
 
