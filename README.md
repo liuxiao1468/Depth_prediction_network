@@ -16,13 +16,4 @@ Sample Results:
 
 Inputs:
 
-![RGB_image](RGB_images.png "Input") ![Depth_prediction](Depth_prediction.png "Output")
-
-
-
-
-
-Ground truth:
-![Ground_truth](https://user-images.githubusercontent.com/25230143/89096253-251fa580-d38a-11ea-94ef-f2bad884045f.png)
-
-
+![RGB_image](RGB_images.png "Input") ![Depth_prediction](Depth_prediction.png "Output") ![Ground_truth](Ground_truth.png "Ground Truth")
