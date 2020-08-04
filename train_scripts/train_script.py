@@ -32,7 +32,7 @@ autoencoder.compile(optimizer=opt, loss=get_loss.autoencoder_loss)
 # print(autoencoder.summary())
 
 i=1
-autoencoder.fit_generator(train_gen, steps_per_epoch = 180, validation_data = validation_gen, epochs=1, validation_steps= 20)
+autoencoder.fit_generator(train_gen, steps_per_epoch = 180, validation_data = validation_gen, epochs=100, validation_steps= 20)
 autoencoder.save('model_'+str(i)+'_ResNet_autoencoder.h5')
 
 
