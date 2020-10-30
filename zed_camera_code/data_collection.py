@@ -31,8 +31,11 @@ def main():
     # Create a InitParameters object and set configuration parameters
     init_params = sl.InitParameters()
     init_params.depth_mode = sl.DEPTH_MODE.ULTRA  # Use PERFORMANCE depth mode
-    init_params.coordinate_units = sl.UNIT.INCH  # use inches
+    # init_params.coordinate_units = sl.UNIT.INCH  # use inches
     init_params.camera_fps = 2  # fps
+    init_params.coordinate_units = sl.UNIT.METER
+    init_params.depth_minimum_distance = 0.4
+    init_params.depth_maximum_distance = 20
     seconds = 600
     time = seconds * init_params.camera_fps
 
@@ -72,21 +75,43 @@ def main():
             
             ocv_depth = test_depth.get_data()
             image_ocv = image.get_data()
-            cv2.imshow('depth', ocv_depth)
-            # cv2.imshow('Image', image_ocv)
-            key = cv2.waitKey(1)
+
+
+
+            # Get and print distance value in mm at the center of the image
+            # We measure the distance camera - object using Euclidean distance
+            x = round(image.get_width() / 2)
+            y = round(image.get_height() / 2)
+            x1 = round(x/2)
+            y1 = round(y/2)
+            x2 = x+x1
+            y2 = y+y1
+            # print(image.get_width())
+            # print(image.get_height())
+
+            err, point_cloud_value = point_cloud.get_value(x, y)
+            depth_value = depth.get_value(y,x)
+            real_depth = depth.get_data()
+            # print(real_depth.shape)
+            depth_value_1 = depth.get_value(y1,x1)
+            depth_value_2 = depth.get_value(y2,x2)
+
+            cv2.circle(ocv_depth, (int(x), int(y) ), 1, (0,0,255), thickness=3)
+            cv2.circle(ocv_depth, (int(x1), int(y1) ), 1, (0,0,255), thickness=3) 
+            cv2.circle(ocv_depth, (int(x2), int(y2) ), 1, (0,0,255), thickness=3)
+
+            print('depth_value: ',depth_value_1[1]," ", depth_value[1], " ", depth_value_2[1])
+            print('real_depth: ', real_depth[y,x], "max distance: ", np.amax(real_depth) )
+
+            # cv2.imshow('depth', real_depth)
+            cv2.imshow('Image', ocv_depth)
+            key = cv2.waitKey(10)
             if key == ord('r'):
                 # "r" pressed
                 depth_image = np.uint8(ocv_depth)
                 cv2.imwrite('/home/xiaoliu/zed_camera/img_data/RGB/RGB-'+str(i)+'-.png',image_ocv)
                 cv2.imwrite('/home/xiaoliu/zed_camera/img_data/Depth/Depth-'+str(i)+'-.png',ocv_depth)
                 print('RECORDING')
-
-            # Get and print distance value in mm at the center of the image
-            # We measure the distance camera - object using Euclidean distance
-            x = round(image.get_width() / 2)
-            y = round(image.get_height() / 2)
-            err, point_cloud_value = point_cloud.get_value(x, y)
 
             distance = math.sqrt(point_cloud_value[0] * point_cloud_value[0] +
                                  point_cloud_value[1] * point_cloud_value[1] +
@@ -97,7 +122,7 @@ def main():
 
             if not np.isnan(distance) and not np.isinf(distance):
                 distance = round(distance)
-                print("Distance to Camera at ({0}, {1}): {2} mm\n".format(x, y, distance))
+                print("Distance to Camera at ({0}, {1}): {2} m\n".format(x, y, distance))
                 # Increment the loop
                 i = i + 1
             else:
