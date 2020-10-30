@@ -23,6 +23,7 @@ import math
 import numpy as np
 import sys
 import cv2
+from numpy import inf
 
 def main():
     # Create a Camera object
@@ -92,6 +93,9 @@ def main():
             err, point_cloud_value = point_cloud.get_value(x, y)
             depth_value = depth.get_value(y,x)
             real_depth = depth.get_data()
+            real_depth = np.where(real_depth==inf, 20.0, real_depth)
+            real_depth = np.where(real_depth== -inf, 0.4, real_depth)
+
             # print(real_depth.shape)
             depth_value_1 = depth.get_value(y1,x1)
             depth_value_2 = depth.get_value(y2,x2)
