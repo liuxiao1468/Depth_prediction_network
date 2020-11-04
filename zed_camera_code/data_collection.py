@@ -24,6 +24,11 @@ import numpy as np
 import sys
 import cv2
 from numpy import inf
+import time
+
+
+NAME = "training-RGB-{}".format(int(time.time()))
+NAME0 = "training-depth-{}".format(int(time.time()))
 
 def main():
     # Create a Camera object
@@ -52,6 +57,7 @@ def main():
 
     # Capture 50 images and depth, then stop
     i = 0
+    flag = 0
     image = sl.Mat()
     depth = sl.Mat()
     point_cloud = sl.Mat()
@@ -112,9 +118,15 @@ def main():
             key = cv2.waitKey(10)
             if key == ord('r'):
                 # "r" pressed
-                depth_image = np.uint8(ocv_depth)
-                cv2.imwrite('/home/xiaoliu/zed_camera/img_data/RGB/RGB-'+str(i)+'-.png',image_ocv)
-                cv2.imwrite('/home/xiaoliu/zed_camera/img_data/Depth/Depth-'+str(i)+'-.png',ocv_depth)
+                flag = 1
+            if key == ord('s'):
+                # "r" pressed
+                flag = 0
+            if flag == 1:
+                real_depth = real_depth*(255/20)
+                depth_image = np.uint8(real_depth)
+                cv2.imwrite('/home/xiaoliu/zed_camera/test_data/RGB/'+NAME+str(i)+'-.png',image_ocv)
+                cv2.imwrite('/home/xiaoliu/zed_camera/test_data/Depth/'+NAME0+str(i)+'-.png',depth_image)
                 print('RECORDING')
 
             distance = math.sqrt(point_cloud_value[0] * point_cloud_value[0] +
