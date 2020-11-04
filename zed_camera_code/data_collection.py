@@ -110,8 +110,8 @@ def main():
             cv2.circle(ocv_depth, (int(x1), int(y1) ), 1, (0,0,255), thickness=3) 
             cv2.circle(ocv_depth, (int(x2), int(y2) ), 1, (0,0,255), thickness=3)
 
-            print('depth_value: ',depth_value_1[1]," ", depth_value[1], " ", depth_value_2[1])
-            print('real_depth: ', real_depth[y,x], "max distance: ", np.amax(real_depth) )
+            # print('depth_value: ',depth_value_1[1]," ", depth_value[1], " ", depth_value_2[1])
+            # print('real_depth: ', real_depth[y,x], "max distance: ", np.amax(real_depth) )
 
             # cv2.imshow('depth', real_depth)
             cv2.imshow('Image', ocv_depth)
@@ -125,9 +125,10 @@ def main():
             if flag == 1:
                 real_depth = real_depth*(255/20)
                 depth_image = np.uint8(real_depth)
-                cv2.imwrite('/home/xiaoliu/zed_camera/test_data/RGB/'+NAME+str(i)+'-.png',image_ocv)
-                cv2.imwrite('/home/xiaoliu/zed_camera/test_data/Depth/'+NAME0+str(i)+'-.png',depth_image)
+                cv2.imwrite('/home/xiaoliu/zed_camera/img_data/RGB/'+NAME+"-"+str(i)+'.png',image_ocv)
+                cv2.imwrite('/home/xiaoliu/zed_camera/img_data/Depth/'+NAME0+"-"+str(i)+'.png',depth_image)
                 print('RECORDING')
+                print(i)
 
             distance = math.sqrt(point_cloud_value[0] * point_cloud_value[0] +
                                  point_cloud_value[1] * point_cloud_value[1] +
@@ -139,10 +140,11 @@ def main():
             if not np.isnan(distance) and not np.isinf(distance):
                 distance = round(distance)
                 print("Distance to Camera at ({0}, {1}): {2} m\n".format(x, y, distance))
-                # Increment the loop
-                i = i + 1
+
             else:
                 print("Can't estimate distance at this position, move the camera\n")
+            # Increment the loop
+            i = i + 1
             sys.stdout.flush()
 
     # Close the camera
