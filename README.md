@@ -14,6 +14,6 @@ Output: 180x320 depth images
 
 Sample Results (Input; Output; Ground Truth):
 
-![RGB_image](RGB_images.png "Input") 
+<!-- ![RGB_image](RGB_images.png "Input") 
 ![Depth_prediction](Depth_prediction.png "Output") 
-![Ground_truth](Ground_truth.png "Ground Truth")
+![Ground_truth](Ground_truth.png "Ground Truth") -->
